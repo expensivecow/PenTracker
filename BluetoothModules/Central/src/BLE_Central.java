@@ -6,8 +6,8 @@ public class BLE_Central {
 	
 	public static void main(String[] args) throws InterruptedException {
 		String MAC_ADDR = "E0:2B:2D:3B:82:89";
-		String DRAW_SERVICE = "180f";
-		String BATTERY_LEVEL_CHARACTERISTIC = "2a19";
+		String DRAW_SERVICE = "180D";
+		String BATTERY_LEVEL_CHARACTERISTIC = "2A38";
 
 		BluetoothManager manager = BluetoothManager.getBluetoothManager();
 		

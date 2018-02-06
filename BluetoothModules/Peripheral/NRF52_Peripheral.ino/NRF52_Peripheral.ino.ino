@@ -1,34 +1,42 @@
 #include <bluefruit.h>
 
+#define DRAW_BUTTON_PORT 7
+#define OPTION_BUTTON_PORT 11
+
 /* HRM Service Definitions
  * Heart Rate Monitor Service:  0x180D
  * Heart Rate Measurement Char: 0x2A37
  */
 BLEUuid UUID16_PEN_SERVICE = BLEUuid(0xface);
-BLEUuid UUID16_DRAWING_SERVICE = BLEUuid(0xdada);
+BLEUuid UUID16_DRAWING_CHARACTERISTIC = BLEUuid(0xdada);
  
-BLEService        hrms = BLEService(UUID16_PEN_SERVICE);
-BLECharacteristic hrmc = BLECharacteristic(UUID16_DRAWING_SERVICE);
+BLEService        pds = BLEService(UUID16_PEN_SERVICE);
+BLECharacteristic pdc = BLECharacteristic(UUID16_DRAWING_CHARACTERISTIC);
+//BLECharacteristic poc = BLECharacteristic(UUID16_OPTION_CHARACTERISTIC);
 
 BLEDis bledis;    // DIS (Device Information Service) helper class instance
 BLEBas blebas;    // BAS (Battery Service) helper class instance
 
-uint8_t  bps = 0;
-
 // Advanced function prototypes
 void startAdv(void);
-void setupHRM(void);
+void setupService(void);
 void connect_callback(uint16_t conn_handle);
 void disconnect_callback(uint16_t conn_handle, uint8_t reason);
 
-int counter;
+boolean prevDrawVal;
+boolean prevOptionVal;
+uint8_t drawData;
+    
+void setup() { 
+  drawData = 0;
+  
+  pinMode(DRAW_BUTTON_PORT, INPUT);
+  pinMode(OPTION_BUTTON_PORT, INPUT);
 
-void setup()
-{
-  counter = 1;
+  prevDrawVal = digitalRead(DRAW_BUTTON_PORT);
+  prevOptionVal = digitalRead(OPTION_BUTTON_PORT);
+  
   Serial.begin(115200);
-  Serial.println("Bluefruit52 HRM Example");
-  Serial.println("-----------------------\n");
 
   // Initialise the Bluefruit module
   Serial.println("Initialise the Bluefruit nRF52 module");
@@ -56,7 +64,7 @@ void setup()
   // Setup the Heart Rate Monitor service using
   // BLEService and BLECharacteristic classes
   Serial.println("Configuring the Heart Rate Monitor Service");
-  setupHRM();
+  setupService();
 
   // Setup the advertising packet(s)
   Serial.println("Setting up the advertising payload(s)");
@@ -65,14 +73,12 @@ void setup()
   Serial.println("\nAdvertising, please connect your device.");
 }
 
-void startAdv(void)
-{
+void startAdv(void) {
   // Advertising packet
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
   Bluefruit.Advertising.addTxPower();
 
-  // Include HRM Service UUID
-  Bluefruit.Advertising.addService(hrms);
+  Bluefruit.Advertising.addService(pds);
 
   // Include Name
   Bluefruit.Advertising.addName();
@@ -92,26 +98,21 @@ void startAdv(void)
   Bluefruit.Advertising.start(0);                // 0 = Don't stop advertising after n seconds  
 }
 
-void setupHRM(void)
-{
-  // Configure the Heart Rate Monitor service
-  // See: https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.service.heart_rate.xml
-  // Supported Characteristics:
-  // Name                         UUID    Requirement Properties
-  // ---------------------------- ------  ----------- ----------
-  // Heart Rate Measurement       0x2A37  Mandatory   Notify
-  // Body Sensor Location         0x2A38  Optional    Read
-  // Heart Rate Control Point     0x2A39  Conditional Write       <-- Not used here
-  hrms.begin();
+void setupService(void) {
+  // Name                           UUID    Properties
+  // ----------------------------   ------  ----------
+  // Pen Draw Service               0xface  N/A
+  // Pen Draw Characteristic        0x0001  Notify/Read
+  // Pen Options Characteristic     0x0002  Notify/Read
+  pds.begin();
 
-  hrmc.setProperties(CHR_PROPS_NOTIFY);
-  hrmc.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
-  hrmc.setFixedLen(1);
-  hrmc.begin();
+  pdc.setProperties(CHR_PROPS_NOTIFY);
+  pdc.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
+  pdc.setFixedLen(1);
+  pdc.begin();
 }
 
-void connect_callback(uint16_t conn_handle)
-{
+void connect_callback(uint16_t conn_handle) {
   char central_name[32] = { 0 };
   Bluefruit.Gap.getPeerName(conn_handle, central_name, sizeof(central_name));
 
@@ -119,8 +120,7 @@ void connect_callback(uint16_t conn_handle)
   Serial.println(central_name);
 }
 
-void disconnect_callback(uint16_t conn_handle, uint8_t reason)
-{
+void disconnect_callback(uint16_t conn_handle, uint8_t reason) {
   (void) conn_handle;
   (void) reason;
 
@@ -128,18 +128,26 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
   Serial.println("Advertising!");
 }
 
-void loop()
-{
-  digitalToggle(LED_RED);
-
-  counter++;
+void loop() {
   if ( Bluefruit.connected() ) {
-    uint8_t hrmdata[1] = {counter};
-    hrmc.notify(hrmdata, 1);
+    boolean currDrawVal = digitalRead(DRAW_BUTTON_PORT);
+  
+    // On Press
+    if (prevDrawVal == false && currDrawVal == true) {
+       drawData = currDrawVal;
+       pdc.notify8(drawData);
+       Serial.println("Button has been pressed");
+    }
+    else if (prevDrawVal == true && currDrawVal == false) {
+       drawData = currDrawVal;
+       pdc.notify8(drawData);
+      Serial.println("Button has been released");
+    }
+    else if (prevDrawVal == true && currDrawVal == true) {
+      // Button is being held down
+    }
+    prevDrawVal = currDrawVal;
   }
-
-  // Only send update once per second
-  delay(1000);
 }
 
 /**
@@ -157,8 +165,7 @@ void loop()
  * such as delay(), xSemaphoreTake() etc ... for more information
  * http://www.freertos.org/a00016.html
  */
-void rtos_idle_callback(void)
-{
+void rtos_idle_callback(void) {
   // Don't call any other FreeRTOS blocking API()
   // Perform background task(s) here
 }

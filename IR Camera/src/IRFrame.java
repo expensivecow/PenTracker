@@ -1,11 +1,11 @@
-public class IRCameraProperties {
+public class IRFrame {
 	private final int MAX_CAMERA_VALUE = 1023;
 	private String portDescriptor;
 	private int _numCameras;
 	private int[] _x;
 	private int[] _y;
 	
-	public IRCameraProperties(int numCameras) {
+	public IRFrame(int numCameras) {
 		_numCameras = numCameras;
 		_x = new int[numCameras];
 		_y = new int[numCameras];
@@ -16,6 +16,10 @@ public class IRCameraProperties {
 		}
 	}
 	
+	public IRFrame() {
+		
+	}
+
 	public int getNumCameras() {
 		return _numCameras;
 	}

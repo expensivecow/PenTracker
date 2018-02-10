@@ -8,20 +8,28 @@ public class IRCamera {
 	private final static byte newLineIndicator = 10;
 	private final static byte commaIndicator = 44;
 
-	private IRFrame currentFrame;
+	//private IRFrame currentFrame;
 	private SerialPort comPort;
-	private byte[] readBuffer;
 	
-	public IRCamera(String portName, int baudRate) {
+	// Coordinates in the format (x1, y1), (x2, y2), (x3, y3), (x4, y4)
+	private int[] coordinates;
+	
+	public IRCamera(String portName, int baudRate, int[] fourCoordinates) {
 		comPort = InitializeComPort(comPort, portName, baudRate);
 
 		if (ClearBuffer(comPort)) {
 			System.out.println("Buffer is emptied");
 		}
+		
+		coordinates = new int[8];
+		
+		for (int i = 0; i < 8; i++) {
+			coordinates[i] = fourCoordinates[i];
+		}
+		
 	}
 	
 	public String getCurrentFrame() {
-
 		String defaultIntString = "0";
 		String tempIntString = defaultIntString;
 		Queue<Integer> lineValue = new LinkedList<Integer>();

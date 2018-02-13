@@ -130,8 +130,10 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason) {
 
 void loop() {
   if ( Bluefruit.connected() ) {
-    boolean currDrawVal = digitalRead(DRAW_BUTTON_PORT);
-  
+    //boolean currDrawVal = digitalRead(DRAW_BUTTON_PORT);
+    pdc.notify8(drawData);
+
+    /*
     // On Press
     if (prevDrawVal == false && currDrawVal == true) {
        drawData = currDrawVal;
@@ -147,6 +149,7 @@ void loop() {
       // Button is being held down
     }
     prevDrawVal = currDrawVal;
+    */
   }
   
 }

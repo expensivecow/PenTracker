@@ -1,8 +1,10 @@
-import java.io.UnsupportedEncodingException;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
-import com.fazecast.jSerialComm.*;
 
+import org.opencv.core.Point;
+
+import com.fazecast.jSerialComm.SerialPort;
 
 public class IRCamera {
 	private final static byte newLineIndicator = 10;
@@ -10,23 +12,16 @@ public class IRCamera {
 
 	//private IRFrame currentFrame;
 	private SerialPort comPort;
+	private List<Point> callibrationList;
 	
-	// Coordinates in the format (x1, y1), (x2, y2), (x3, y3), (x4, y4)
-	private int[] coordinates;
-	
-	public IRCamera(String portName, int baudRate, int[] fourCoordinates) {
+	public IRCamera(String portName, int baudRate, List<Point> calList) {
 		comPort = InitializeComPort(comPort, portName, baudRate);
 
 		if (ClearBuffer(comPort)) {
 			System.out.println("Buffer is emptied");
 		}
 		
-		coordinates = new int[8];
-		
-		for (int i = 0; i < 8; i++) {
-			coordinates[i] = fourCoordinates[i];
-		}
-		
+		callibrationList = calList;
 	}
 	
 	public String getCurrentFrame() {

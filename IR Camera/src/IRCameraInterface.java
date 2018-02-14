@@ -95,7 +95,7 @@ public class IRCameraInterface {
 		        Core.flip(cameraMat, flipMat, 0);
 		        
 		        warpedMat = warpedTransformer.getProjection();
-				System.out.println("Camera 1 " + camerastring);
+				//System.out.println("Camera 1 " + camerastring);
 			}
 			
 			if(Integer.parseInt(camera2Values[0]) != 1023 && Integer.parseInt(camera2Values[1]) != 1023) {
@@ -104,7 +104,7 @@ public class IRCameraInterface {
 		        Core.flip(cameraMat2, flipMat2, 0);
 		        
 		        warpedMat2 = warpedTransformer2.getProjection();
-				System.out.println("Camera 2 " + camera2string);
+				//System.out.println("Camera 2 " + camera2string);
 			}
 			
 			List<Mat> src = Arrays.asList(warpedMat2, warpedMat);

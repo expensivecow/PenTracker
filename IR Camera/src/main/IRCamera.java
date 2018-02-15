@@ -1,3 +1,4 @@
+package main;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -7,12 +8,11 @@ import org.opencv.core.Point;
 import com.fazecast.jSerialComm.SerialPort;
 
 public class IRCamera {
-	private final static byte newLineIndicator = 10;
-	private final static byte commaIndicator = 44;
+	private final byte newLineIndicator = 10;
+	private final byte commaIndicator = 44;
 
 	//private IRFrame currentFrame;
 	private SerialPort comPort;
-	private List<Point> callibrationList;
 	
 	public IRCamera(String portName, int baudRate, List<Point> calList) {
 		comPort = InitializeComPort(comPort, portName, baudRate);
@@ -20,11 +20,9 @@ public class IRCamera {
 		if (ClearBuffer(comPort)) {
 			System.out.println("Buffer is emptied");
 		}
-		
-		callibrationList = calList;
 	}
 	
-	public String getCurrentFrame() {
+	public String detectCoordinates() {
 		String defaultIntString = "0";
 		String tempIntString = defaultIntString;
 		Queue<Integer> lineValue = new LinkedList<Integer>();
@@ -120,8 +118,10 @@ public class IRCamera {
 	private boolean ClearBuffer(SerialPort port) {
 		boolean emptied = false;
 		
-		byte[] tempBuffer = new byte[port.bytesAvailable()];
-		port.readBytes(tempBuffer, port.bytesAvailable());
+		if (port.bytesAvailable() > 0) {
+			byte[] tempBuffer = new byte[port.bytesAvailable()];
+			port.readBytes(tempBuffer, port.bytesAvailable());	
+		}
 		
 		if(port.bytesAvailable() == 0) {
 			emptied = true;

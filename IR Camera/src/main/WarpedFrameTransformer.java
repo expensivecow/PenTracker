@@ -1,3 +1,4 @@
+package main;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,16 +10,13 @@ import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.utils.Converters;
 
-
 public class WarpedFrameTransformer {
 	private List<Point> corners = new ArrayList<Point>();
 	private List<Point> target = new ArrayList<Point>();
 	private List<Point> newPoints = new ArrayList<Point>();
-	private List<Point> perspPoints = new ArrayList<Point>();
 	private Mat img;
 	private Mat proj;
 	private Mat trans;
-	private Mat invTrans;
 	
 	public WarpedFrameTransformer(Mat image, List<Point> cornerPoints) {
 		// Initialize target mat coordinates
@@ -38,7 +36,6 @@ public class WarpedFrameTransformer {
 			Mat cornersMat = Converters.vector_Point2f_to_Mat(corners);
 			Mat targetMat = Converters.vector_Point2f_to_Mat(target);
 			trans = Imgproc.getPerspectiveTransform(cornersMat, targetMat);
-			invTrans = Imgproc.getPerspectiveTransform(targetMat, cornersMat);
 			proj = new Mat();
 
 			Imgproc.warpPerspective(img, proj, trans, new Size(img.cols(), img.rows()));

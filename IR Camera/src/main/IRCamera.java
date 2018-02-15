@@ -10,8 +10,8 @@ import com.fazecast.jSerialComm.SerialPort;
 public class IRCamera {
 	private final byte newLineIndicator = 10;
 	private final byte commaIndicator = 44;
-
-	//private IRFrame currentFrame;
+	
+	private IRCoordinates currentCoordinates;
 	private SerialPort comPort;
 	
 	public IRCamera(String portName, int baudRate, List<Point> calList) {
@@ -22,7 +22,7 @@ public class IRCamera {
 		}
 	}
 	
-	public String detectCoordinates() {
+	public IRCoordinates updateCoordinates() {
 		String defaultIntString = "0";
 		String tempIntString = defaultIntString;
 		Queue<Integer> lineValue = new LinkedList<Integer>();
@@ -40,8 +40,8 @@ public class IRCamera {
 							first = false;
 						}
 						else {
-							return lineValue.toString();
-							//System.out.println(lineValue.toString());
+							currentCoordinates = new IRCoordinates(lineValue.toString());
+							return currentCoordinates;
 						}
 
 						tempIntString = "0";

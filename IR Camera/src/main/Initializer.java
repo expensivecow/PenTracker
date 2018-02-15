@@ -57,25 +57,29 @@ public class Initializer {
 		cameraInterface.start(Color.BLACK);
 		
 		while(true) {
-			String[] cameraValues = cleanUpString(camera.detectCoordinates());
-			String[] camera2Values = cleanUpString(camera2.detectCoordinates());
+			IRCoordinates camCoords = camera.updateCoordinates();
+			IRCoordinates camCoords2 = camera2.updateCoordinates();
 			
-			if(Integer.parseInt(cameraValues[0]) != 1023 && Integer.parseInt(cameraValues[1]) != 1023) {
-		        Point point = new Point(Double.parseDouble(cameraValues[1]), Double.parseDouble(cameraValues[0]));
+			if(camCoords.arePointsFound()) {
+				// X and Y coordinates are flipped before the camera is flipped on its side
+		        Point point = new Point(camCoords.getYCoordinate(0), camCoords.getXCoordinate(0));
 		        Core.circle(cameraMat, point, 3, new Scalar(0, 0, 255), -1);
 		        Core.flip(cameraMat, flipMat, 0);
 		        
 		        warpedMat = warpedTransformer.getProjection();
-				System.out.println("Camera 1 " + cameraValues.toString());
+		        
+				System.out.println("Camera 1 " + camCoords.getXCoordinate(0) + ", " + camCoords.getYCoordinate(0));	
 			}
 			
-			if(Integer.parseInt(camera2Values[0]) != 1023 && Integer.parseInt(camera2Values[1]) != 1023) {
-				Point point = new Point(Double.parseDouble(camera2Values[1]), Double.parseDouble(camera2Values[0]));
+			if(camCoords2.arePointsFound()) {
+				// X and Y coordinates are flipped before the camera is flipped on its side
+				Point point = new Point(camCoords2.getYCoordinate(0), camCoords2.getXCoordinate(0));
 		        Core.circle(cameraMat2, point, 3, new Scalar(0, 255, 255), -1);
 		        Core.flip(cameraMat2, flipMat2, 0);
 		        
 		        warpedMat2 = warpedTransformer2.getProjection();
-				System.out.println("Camera 2 " + camera2Values.toString());
+		        
+				System.out.println("Camera 2 " + camCoords2.getXCoordinate(0) + ", " + camCoords2.getYCoordinate(0));
 			}
 			
 			List<Mat> src = Arrays.asList(warpedMat2, warpedMat);
@@ -87,14 +91,6 @@ public class Initializer {
 			cameraWindow.setImage(combinedMat);
 			camera2Window.setImage(beforeMat);
 		}
-	}
-
-	private static String[] cleanUpString(String toClean) {
-		String result = toClean.replace("[", "");
-		result = result.replace("]", "");
-		result = result.replace(" ", "");
-		
-		return result.split(","); 
 	}
 
 	private void start(Color color){

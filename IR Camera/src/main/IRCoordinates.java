@@ -12,14 +12,7 @@ public class IRCoordinates {
 	private List<Point> coordinates = new ArrayList<Point>();
 	
 	public IRCoordinates(String inputCoordinates) {
-		String[] stringCoordinate = cleanUpString(inputCoordinates);
-		
-		for(int i = 0; i < 8; i += 2) {
-			double x = Double.parseDouble(stringCoordinate[i]);
-			double y = Double.parseDouble(stringCoordinate[i+1]);
-			Point point = new Point(x, y);
-			coordinates.add(point);
-		}
+		updateCoordinates(inputCoordinates);
 		
 		foundAPoint = (coordinates.get(0).x != MAX_CAMERA_VALUE && coordinates.get(0).y != MAX_CAMERA_VALUE);
 		
@@ -40,6 +33,17 @@ public class IRCoordinates {
 		result = result.replace(" ", "");
 		
 		return result.split(","); 
+	}
+	
+	public void updateCoordinates(String inputCoordinates) {
+		String[] stringCoordinate = cleanUpString(inputCoordinates);
+		
+		for(int i = 0; i < 8; i += 2) {
+			double x = Double.parseDouble(stringCoordinate[i]);
+			double y = Double.parseDouble(stringCoordinate[i+1]);
+			Point point = new Point(x, y);
+			coordinates.add(point);
+		}
 	}
 	
 	public double getXCoordinate(int pointNum) {

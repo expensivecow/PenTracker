@@ -33,28 +33,22 @@ public class Initializer {
 	public static Mat beforeMat;
 	public static Mat combinedMat;
 	
-	public static int WIDTH;
-	public static int HEIGHT;
 	public static ImgWindow cameraWindow;
 	public static ImgWindow camera2Window;
 	
 	public static IRCamera camera;	
 	public static IRCamera camera2;
 
-	public static WarpedFrameTransformer warpedTransformer;
-	public static WarpedFrameTransformer warpedTransformer2;
-	
-	public Initializer(int width, int height) {
-		WIDTH = width;
-		HEIGHT = height;
-	}
+	public static Frame frame;
+	public static Frame frame2;
 	
 	public static void main(String[] args) throws InterruptedException, IOException {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         
 		// Camera interface 1
-		Initializer cameraInterface = new Initializer(767, 1023);  
-		cameraInterface.start(Color.BLACK);
+		Initializer initializer = new Initializer();  
+		
+		initializer.start(Color.BLACK);
 		
 		while(true) {
 			IRCoordinates camCoords = camera.updateCoordinates();
@@ -66,7 +60,9 @@ public class Initializer {
 		        Core.circle(cameraMat, point, 3, new Scalar(0, 0, 255), -1);
 		        Core.flip(cameraMat, flipMat, 0);
 		        
-		        warpedMat = warpedTransformer.getProjection();
+		        warpedMat = frame.getProjection();
+		        
+		        frame.updateTestFrame(new Point(1023 - camCoords.getYCoordinate(0), camCoords.getXCoordinate(0)));
 		        
 				System.out.println("Camera 1 " + camCoords.getXCoordinate(0) + ", " + camCoords.getYCoordinate(0));	
 			}
@@ -77,13 +73,15 @@ public class Initializer {
 		        Core.circle(cameraMat2, point, 3, new Scalar(0, 255, 255), -1);
 		        Core.flip(cameraMat2, flipMat2, 0);
 		        
-		        warpedMat2 = warpedTransformer2.getProjection();
+		        warpedMat2 = frame2.getProjection();
+
+		        frame2.updateTestFrame(new Point(1023 - camCoords2.getYCoordinate(0), camCoords2.getXCoordinate(0)));
 		        
 				System.out.println("Camera 2 " + camCoords2.getXCoordinate(0) + ", " + camCoords2.getYCoordinate(0));
 			}
 			
 			List<Mat> src = Arrays.asList(warpedMat2, warpedMat);
-			List<Mat> src2 = Arrays.asList(flipMat2, flipMat);
+			List<Mat> src2 = Arrays.asList(frame.getTestFrame(), frame2.getTestFrame());
 
 			Core.hconcat(src, combinedMat);
 			Core.hconcat(src2, beforeMat);
@@ -94,40 +92,43 @@ public class Initializer {
 	}
 
 	private void start(Color color){
-		
         cameraWindow = ImgWindow.newWindow();
         camera2Window = ImgWindow.newWindow();
-        
-	    cameraMat = new Mat(HEIGHT, WIDTH, CvType.CV_8UC3);
-	    cameraMat2 = new Mat(HEIGHT, WIDTH, CvType.CV_8UC3);
-	    
-	    flipMat = new Mat(HEIGHT, WIDTH, CvType.CV_8UC3);
-	    flipMat2 = new Mat(HEIGHT, WIDTH, CvType.CV_8UC3);
-	    
-	    warpedMat = new Mat(HEIGHT, WIDTH, CvType.CV_8UC3);
-	    warpedMat2 = new Mat(HEIGHT, WIDTH, CvType.CV_8UC3);
 
-	    beforeMat = new Mat(HEIGHT, WIDTH*2, CvType.CV_8UC3);
-	    combinedMat = new Mat(HEIGHT, WIDTH*2, CvType.CV_8UC3);
-	    
-        List<Point> corners = new ArrayList<Point>();
-        corners.add(new Point(125.0, 266.0));
-		corners.add(new Point(705.0, 264.0));
-		corners.add(new Point(698.0, 937.0));
-		corners.add(new Point(125.0, 886.0));
-        
-        List<Point> corners2 = new ArrayList<Point>();
-		corners2.add(new Point(136.0, 321.0));
-		corners2.add(new Point(684.0, 330.0));
-		corners2.add(new Point(687.0, 943.0));
-		corners2.add(new Point(135.0, 967.0));
-		
         Config config = new Config("config.properties");
         
-		camera = new IRCamera(config.getProperty("CameraSerial1"), 19200, corners);
-		camera2 = new IRCamera(config.getProperty("CameraSerial2"), 19200, corners2);
+        // TODO, create configuration check
+        int height = Integer.parseInt(config.getProperty("CameraFrameHeight"));
+        int width = Integer.parseInt(config.getProperty("CameraFrameWidth"));
+        
+	    cameraMat = new Mat(height, width, CvType.CV_8UC3);
+	    cameraMat2 = new Mat(height, width, CvType.CV_8UC3);
+	    
+	    flipMat = new Mat(height, width, CvType.CV_8UC3);
+	    flipMat2 = new Mat(height, width, CvType.CV_8UC3);
+	    
+	    warpedMat = new Mat(height, width, CvType.CV_8UC3);
+	    warpedMat2 = new Mat(height, width, CvType.CV_8UC3);
+
+	    beforeMat = new Mat(height, width*2, CvType.CV_8UC3);
+	    combinedMat = new Mat(height, width*2, CvType.CV_8UC3);
+	    
+        List<Point> callib = new ArrayList<Point>();
+        callib.add(new Point(125.0, 266.0));
+        callib.add(new Point(705.0, 264.0));
+        callib.add(new Point(698.0, 937.0));
+        callib.add(new Point(125.0, 886.0));
+        
+        List<Point> callib2 = new ArrayList<Point>();
+        callib2.add(new Point(136.0, 321.0));
+        callib2.add(new Point(684.0, 330.0));
+        callib2.add(new Point(687.0, 943.0));
+        callib2.add(new Point(135.0, 967.0));
+        
+		camera = new IRCamera(config.getProperty("CameraSerial1"), 19200, callib);
+		camera2 = new IRCamera(config.getProperty("CameraSerial2"), 19200, callib2);
 		
-        warpedTransformer = new WarpedFrameTransformer(flipMat, corners);
-        warpedTransformer2 = new WarpedFrameTransformer(flipMat2, corners2);
+        frame = new Frame(flipMat, callib, width, height);
+        frame2 = new Frame(flipMat2, callib2, width, height);
 	}
 }

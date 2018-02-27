@@ -28,9 +28,10 @@ public class IRCamera {
 		Queue<Integer> lineValue = new LinkedList<Integer>();
 		boolean first = true;
 		while(true) {
-			if(comPort.bytesAvailable() > 0) {
-				byte[] readBuffer = new byte[comPort.bytesAvailable()];
-				comPort.readBytes(readBuffer, comPort.bytesAvailable());
+			int bytesAvailable = comPort.bytesAvailable();
+			if(bytesAvailable > 0) {
+				byte[] readBuffer = new byte[bytesAvailable];
+				comPort.readBytes(readBuffer, bytesAvailable);
 				
 				for(int i = 0; i < readBuffer.length; i++) {
 					if(readBuffer[i] == newLineIndicator) {

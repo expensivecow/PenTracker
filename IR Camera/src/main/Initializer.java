@@ -36,8 +36,7 @@ public class Initializer {
 	public static ImgWindow cameraWindow;
 	public static ImgWindow camera2Window;
 	
-	public static IRCamera camera;	
-	public static IRCamera camera2;
+	public static List<IRCamera> cameras = new ArrayList<IRCamera>();
 
 	public static Frame frame;
 	public static Frame frame2;
@@ -51,8 +50,8 @@ public class Initializer {
 		initializer.start(Color.BLACK);
 		
 		while(true) {
-			IRCoordinates camCoords = camera.updateCoordinates();
-			IRCoordinates camCoords2 = camera2.updateCoordinates();
+			IRCoordinates camCoords = cameras.get(0).updateCoordinates();
+			IRCoordinates camCoords2 = cameras.get(1).updateCoordinates();
 			
 			if(camCoords.arePointsFound()) {
 				// X and Y coordinates are flipped before the camera is flipped on its side
@@ -62,7 +61,7 @@ public class Initializer {
 		        
 		        warpedMat = frame.getProjection();
 		        
-		        frame.updateTestFrame(new Point(1023 - camCoords.getYCoordinate(0), camCoords.getXCoordinate(0)));
+		        //frame.updateTestFrame(new Point(1023 - camCoords.getYCoordinate(0), camCoords.getXCoordinate(0)));
 		        
 				System.out.println("Camera 1 " + camCoords.getXCoordinate(0) + ", " + camCoords.getYCoordinate(0));	
 			}
@@ -75,7 +74,7 @@ public class Initializer {
 		        
 		        warpedMat2 = frame2.getProjection();
 
-		        frame2.updateTestFrame(new Point(1023 - camCoords2.getYCoordinate(0), camCoords2.getXCoordinate(0)));
+		        //frame2.updateTestFrame(new Point(1023 - camCoords2.getYCoordinate(0), camCoords2.getXCoordinate(0)));
 		        
 				System.out.println("Camera 2 " + camCoords2.getXCoordinate(0) + ", " + camCoords2.getYCoordinate(0));
 			}
@@ -95,11 +94,9 @@ public class Initializer {
         cameraWindow = ImgWindow.newWindow();
         camera2Window = ImgWindow.newWindow();
 
-        Config config = new Config("config.properties");
-        
-        // TODO, create configuration check
-        int height = Integer.parseInt(config.getProperty("CameraFrameHeight"));
-        int width = Integer.parseInt(config.getProperty("CameraFrameWidth"));
+        // TODO, create configuration check	
+        int height = Integer.parseInt(Config.getInstance().getProperty("CameraFrameHeight"));
+        int width = Integer.parseInt(Config.getInstance().getProperty("CameraFrameWidth"));
         
 	    cameraMat = new Mat(height, width, CvType.CV_8UC3);
 	    cameraMat2 = new Mat(height, width, CvType.CV_8UC3);
@@ -125,8 +122,8 @@ public class Initializer {
         callib2.add(new Point(687.0, 943.0));
         callib2.add(new Point(135.0, 967.0));
         
-		camera = new IRCamera(config.getProperty("CameraSerial1"), 19200, callib);
-		camera2 = new IRCamera(config.getProperty("CameraSerial2"), 19200, callib2);
+		cameras.add(new IRCamera(Config.getInstance().getProperty("CameraSerial1"), 19200, callib));
+		cameras.add(new IRCamera(Config.getInstance().getProperty("CameraSerial2"), 19200, callib2));
 		
         frame = new Frame(flipMat, callib, width, height);
         frame2 = new Frame(flipMat2, callib2, width, height);

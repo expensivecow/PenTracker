@@ -4,16 +4,28 @@ import java.io.FileInputStream;
 import java.util.Properties;
 
 public class Config {
-	private Properties configFile;
+	private static final String FILE_LOCATION = "config.properties";
+	private static Config configInstance = null;
+	private static Properties configFile;
 	
-	public Config(String fileLocation) {
-		configFile = new Properties();
-		try {
-			configFile.load(new FileInputStream(fileLocation));
-		} catch (Exception e) {
-			System.err.println("Unable to load configuration file at location " + fileLocation);
-			System.exit(-1);
+	protected Config() {
+		// Only to defeat instantiation
+	}
+
+	public static Config getInstance() {
+		if (configInstance == null) {
+			configInstance = new Config();
+			
+			configInstance.configFile = new Properties();
+			try {
+				configInstance.configFile.load(new FileInputStream(FILE_LOCATION));
+			} catch (Exception e) {
+				System.err.println("Unable to load configuration file at location " + FILE_LOCATION);
+				System.exit(-1);
+			}		
 		}
+		
+		return configInstance;
 	}
 	
 	public String getProperty(String key) {

@@ -1,12 +1,15 @@
 package utils;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Properties;
 
 public class Config {
 	private static final String FILE_LOCATION = "config.properties";
 	private static Config configInstance = null;
-	private static Properties configFile;
+	private Properties configFile;
 	
 	protected Config() {
 		// Only to defeat instantiation
@@ -31,5 +34,11 @@ public class Config {
 	public String getProperty(String key) {
 		String value = this.configFile.getProperty(key);
 		return value;
+	}
+	
+	public void saveProperty(String key, String value) throws FileNotFoundException, IOException {
+		this.configFile.setProperty(key, value);
+		
+		this.configFile.store(new FileOutputStream(FILE_LOCATION), null);
 	}
 }

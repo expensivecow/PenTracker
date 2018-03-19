@@ -48,7 +48,13 @@ public class Initializer {
 		Initializer initializer = new Initializer();  
 		
 		initializer.start(Color.BLACK);
+
+		cameraWindow.closeWindow();
+		camera2Window.closeWindow();
 		
+		Callibration callibration = new Callibration(cameras);
+		callibration.startCallibration();
+
 		while(true) {
 			IRCoordinates camCoords = cameras.get(0).updateCoordinates();
 			IRCoordinates camCoords2 = cameras.get(1).updateCoordinates();
@@ -91,8 +97,8 @@ public class Initializer {
 	}
 
 	private void start(Color color){
-        cameraWindow = ImgWindow.newWindow();
-        camera2Window = ImgWindow.newWindow();
+        cameraWindow = ImgWindow.newWindow("Camera 1");
+        camera2Window = ImgWindow.newWindow("Camera 2");
 
         // TODO, create configuration check	
         int height = Integer.parseInt(Config.getInstance().getProperty("CameraFrameHeight"));
@@ -111,19 +117,19 @@ public class Initializer {
 	    combinedMat = new Mat(height, width*2, CvType.CV_8UC3);
 	    
         List<Point> callib = new ArrayList<Point>();
-        callib.add(new Point(125.0, 266.0));
-        callib.add(new Point(705.0, 264.0));
-        callib.add(new Point(698.0, 937.0));
-        callib.add(new Point(125.0, 886.0));
+        callib.add(new Point(140.0, 196.0));
+        callib.add(new Point(759.0, 167.0));
+        callib.add(new Point(788.0, 704.0));
+        callib.add(new Point(133.0, 730.0));
         
         List<Point> callib2 = new ArrayList<Point>();
-        callib2.add(new Point(136.0, 321.0));
-        callib2.add(new Point(684.0, 330.0));
-        callib2.add(new Point(687.0, 943.0));
-        callib2.add(new Point(135.0, 967.0));
+        callib2.add(new Point(74.0, 110.0));
+        callib2.add(new Point(738.0, 38.0));
+        callib2.add(new Point(800.0, 632.0));
+        callib2.add(new Point(135.0, 720.0));
         
-		cameras.add(new IRCamera(Config.getInstance().getProperty("CameraSerial1"), 19200, callib));
-		cameras.add(new IRCamera(Config.getInstance().getProperty("CameraSerial2"), 19200, callib2));
+		cameras.add(new IRCamera(Config.getInstance().getProperty("Camera1_Name"), Config.getInstance().getProperty("Camera1_Serial"), 19200, callib));
+		cameras.add(new IRCamera(Config.getInstance().getProperty("Camera2_Name"), Config.getInstance().getProperty("Camera2_Serial"), 19200, callib2));
 		
         frame = new Frame(flipMat, callib, width, height);
         frame2 = new Frame(flipMat2, callib2, width, height);

@@ -38,8 +38,9 @@ public class ImgWindow extends JPanel {
 	volatile public boolean closed;
 	volatile EventQueue eventQueue = new EventQueue();
 
-	public ImgWindow (JFrame frame) {
+	public ImgWindow (JFrame frame, String title) {
 		this.frame = frame;
+		this.frame.setTitle(title);
 		this.frame.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosed (WindowEvent e) {
@@ -77,6 +78,10 @@ public class ImgWindow extends JPanel {
 		}
 	}
 
+	public void closeWindow() {
+		frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+	}
+	
 	public void setImage (Mat mat) {
 		if (mat == null) {
 			img = null;
@@ -212,23 +217,27 @@ public class ImgWindow extends JPanel {
 	}
 	
 	public static ImgWindow newUndecoratedWindow () {
-		return newWindow(null, true);
+		return newWindow(null, true, "");
 	}
 
 	public static ImgWindow newWindow () {
-		return newWindow(null, false);
+		return newWindow(null, false, "");
 	}
 	
 	public static ImgWindow newWindow (Mat mat) {
-		return newWindow(mat, false);
+		return newWindow(mat, false, "");
+	}
+	
+	public static ImgWindow newWindow (String title) {
+		return newWindow(null, false, title);
 	}	
 
-	public static ImgWindow newWindow (Mat mat, boolean undecorated) {
+	public static ImgWindow newWindow (Mat mat, boolean undecorated, String title) {
 		JFrame frame = new JFrame();
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		frame.setSize(400, 400);
 		frame.setUndecorated(undecorated);
-		ImgWindow panel = new ImgWindow(frame);
+		ImgWindow panel = new ImgWindow(frame, title);
 		panel.setLayout(new FlowLayout(FlowLayout.LEFT));
 		frame.add(panel);
 		frame.setVisible(true);

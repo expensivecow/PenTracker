@@ -16,8 +16,7 @@ public class IRCamera {
 	private SerialPort comPort;
 	private String name;
 
-	public IRCamera(String cameraName, String portName, int baudRate,
-			List<Point> calList) {
+	public IRCamera(String cameraName, String portName, int baudRate) {
 		comPort = InitializeComPort(comPort, portName, baudRate);
 		name = cameraName;
 

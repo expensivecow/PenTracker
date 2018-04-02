@@ -9,9 +9,13 @@
  */
 BLEUuid UUID16_PEN_SERVICE = BLEUuid(0xface);
 BLEUuid UUID16_DRAWING_CHARACTERISTIC = BLEUuid(0xdada);
+BLEUuid UUID16_RESYNC_CHARACTERISTIC = BLEUuid(0xdadb);
+BLEUuid UUID16_CLEAR_CHARACTERISTIC = BLEUuid(0xdadc);
  
 BLEService        pds = BLEService(UUID16_PEN_SERVICE);
 BLECharacteristic pdc = BLECharacteristic(UUID16_DRAWING_CHARACTERISTIC);
+BLECharacteristic pdrs = BLECharacteristic(UUID16_RESYNC_CHARACTERISTIC);
+BLECharacteristic pdcl = BLECharacteristic(UUID16_CLEAR_CHARACTERISTIC);
 //BLECharacteristic poc = BLECharacteristic(UUID16_OPTION_CHARACTERISTIC);
 
 BLEDis bledis;    // DIS (Device Information Service) helper class instance
@@ -110,6 +114,16 @@ void setupService(void) {
   pdc.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
   pdc.setFixedLen(1);
   pdc.begin();
+  
+  pdrs.setProperties(CHR_PROPS_NOTIFY);
+  pdrs.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
+  pdrs.setFixedLen(1);
+  pdrs.begin();
+  
+  pdcl.setProperties(CHR_PROPS_NOTIFY);
+  pdcl.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
+  pdcl.setFixedLen(1);
+  pdcl.begin();
 }
 
 void connect_callback(uint16_t conn_handle) {
@@ -130,10 +144,8 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason) {
 
 void loop() {
   if ( Bluefruit.connected() ) {
-    //boolean currDrawVal = digitalRead(DRAW_BUTTON_PORT);
-    pdc.notify8(drawData);
+    boolean currDrawVal = digitalRead(DRAW_BUTTON_PORT);
 
-    /*
     // On Press
     if (prevDrawVal == false && currDrawVal == true) {
        drawData = currDrawVal;
@@ -149,7 +161,7 @@ void loop() {
       // Button is being held down
     }
     prevDrawVal = currDrawVal;
-    */
+    
   }
   
 }

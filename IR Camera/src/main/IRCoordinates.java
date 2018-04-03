@@ -14,12 +14,15 @@ public class IRCoordinates {
 	public IRCoordinates(String inputCoordinates) {
 		updateCoordinates(inputCoordinates);
 		
-		foundAPoint = (coordinates.get(0).getPoint().x != MAX_CAMERA_VALUE && coordinates.get(0).getPoint().y != MAX_CAMERA_VALUE);
+		if (coordinates.size() > 0) 
+			foundAPoint = (coordinates.get(0).getPoint().x != MAX_CAMERA_VALUE && coordinates.get(0).getPoint().y != MAX_CAMERA_VALUE);
+		else 
+			foundAPoint = false;
 		
 		numPointsFound = 0;
 		
 		if (foundAPoint) {
-			for (int i = 0; i < 4; i++) {
+			for (int i = 0; i < coordinates.size(); i++) {
 				if (coordinates.get(i).getPoint().x != MAX_CAMERA_VALUE && coordinates.get(i).getPoint().y != MAX_CAMERA_VALUE) {
 					numPointsFound++;
 				}
@@ -43,7 +46,6 @@ public class IRCoordinates {
 		String[] stringCoordinate = cleanUpString(inputCoordinates);
 		
 		for(int i = 0; i < stringCoordinate.length-1; i += 2) {
-			// TODO
 			double x = Double.parseDouble(stringCoordinate[i]);
 			double y = Double.parseDouble(stringCoordinate[i+1]);
 			IRPoint point = new IRPoint(new Point(x, y));
@@ -70,7 +72,7 @@ public class IRCoordinates {
 	public String toString() {
 		String result = "";
 		
-		for(int i = 0; i < 4; i++) {
+		for(int i = 0; i < coordinates.size(); i++) {
 			result += (int) coordinates.get(i).getPoint().x + "," + (int) coordinates.get(i).getPoint().y;
 			
 			if(i != 3) {
@@ -79,6 +81,21 @@ public class IRCoordinates {
 		}
 		
 		return result;
+	}
+	
+	public void translateCoordinates() {
+		List<IRPoint> points = new ArrayList<IRPoint>();
+		
+		for(int i = 0; i < coordinates.size(); i++) {
+			IRPoint currPoint = coordinates.get(i);
+			
+			double x = currPoint.getPoint().x;
+			double y = currPoint.getPoint().y;
+			
+			points.add(new IRPoint(new Point(y, 1023.0 - x)));
+		}
+		
+		coordinates = points;
 	}
 	
 	public void orderPoints() {
@@ -116,14 +133,6 @@ public class IRCoordinates {
 		}
 		
 		List<IRPoint> orderedCoordinates = new ArrayList<IRPoint>();
-		
-		/*
-		for(int i = 0; i < 4; i++) {
-			IRPoint currPoint = coordinates.get(i);
-			System.out.println(Double.toString(currPoint.getPoint().x) + " => " + Integer.toString(currPoint.getXRank()));
-			System.out.println(Double.toString(currPoint.getPoint().y) + " => " + Integer.toString(currPoint.getYRank()));
-		}
-		*/
 		
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 4; j++) {

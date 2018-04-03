@@ -37,15 +37,18 @@ public class Callibration {
 		
 		callibrationWindow = ImgWindow.newWindow("Callibration Window");
 		for(IRCamera camera : callibrationCameras) {
+			System.out.println("Callibrating " + camera.getCameraName());
 			callibrateSingleCamera(camera);
 		}
 	}
 	
 	private void callibrateSingleCamera(IRCamera camera) throws FileNotFoundException, IOException {
-		IRCoordinates coordinates = camera.updateCoordinates();
+		IRCoordinates coordinates = camera.getCurrentCoordinates();
 		IRCoordinates prevCoordinates = null;
         
 		while (coordinates.getNumPointsFound() != NUM_CAMERA_POINTS_REQUIRED) {
+			System.out.println(coordinates.toString());
+			
 			for (int i = 0; i < coordinates.getNumPointsFound(); i++) {
 				Point point = new Point(coordinates.getYCoordinate(i), coordinates.getXCoordinate(i));
 		        Core.circle(cameraMat, point, 3, new Scalar(0, 0, 255), -1);
@@ -54,9 +57,10 @@ public class Callibration {
 			Core.flip(cameraMat, flipMat, 0);
 			callibrationWindow.setImage(flipMat);
 			
-			coordinates = camera.updateCoordinates();
+			coordinates = camera.getCurrentCoordinates();
 		}		
 		
+		coordinates.translateCoordinates();
 		coordinates.orderPoints();
 		saveCallibration(camera, coordinates);
 		System.out.println(coordinates.toString());
@@ -67,8 +71,8 @@ public class Callibration {
 		List<IRPoint> pointsToSave = coordinates.getIRPoints();
 		
 		for(int i = 0; i < 4; i++) {
-			Config.getInstance().saveProperty(camera.getName() + "_x" + Integer.toString(i), Double.toString(pointsToSave.get(i).getPoint().x));
-			Config.getInstance().saveProperty(camera.getName() + "_y" + Integer.toString(i), Double.toString(pointsToSave.get(i).getPoint().y));
+			Config.getInstance().saveProperty(camera.getCameraName() + "_x" + Integer.toString(i), Double.toString(pointsToSave.get(i).getPoint().x));
+			Config.getInstance().saveProperty(camera.getCameraName() + "_y" + Integer.toString(i), Double.toString(pointsToSave.get(i).getPoint().y));
 		}
 		
 		return;

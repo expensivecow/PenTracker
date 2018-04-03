@@ -1,20 +1,22 @@
 package main;
 
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
-
-import org.opencv.core.Point;
 
 import com.fazecast.jSerialComm.SerialPort;
 
-public class IRCamera {
+public class IRCamera extends Thread {
 	private final byte newLineIndicator = 10;
 	private final byte commaIndicator = 44;
 
 	private IRCoordinates currentCoordinates;
 	private SerialPort comPort;
 	private String name;
+	private boolean first;
+
+	public void run() {
+		updateCoordinates();
+	}
 
 	public IRCamera(String cameraName, String portName, int baudRate) {
 		comPort = InitializeComPort(comPort, portName, baudRate);
@@ -23,13 +25,20 @@ public class IRCamera {
 		if (ClearBuffer(comPort)) {
 			System.out.println("Buffer is emptied");
 		}
+		
+		first = true;
+		
+		this.start();
 	}
 
-	public IRCoordinates updateCoordinates() {
+	public IRCoordinates getCurrentCoordinates() {
+		return currentCoordinates;
+	}
+	
+	public void updateCoordinates() {
 		String defaultIntString = "0";
 		String tempIntString = defaultIntString;
 		Queue<Integer> lineValue = new LinkedList<Integer>();
-		boolean first = true;
 		while (true) {
 			int bytesAvailable = comPort.bytesAvailable();
 			if (bytesAvailable > 0) {
@@ -45,7 +54,6 @@ public class IRCamera {
 						} else {
 							currentCoordinates = new IRCoordinates(
 									lineValue.toString());
-							return currentCoordinates;
 						}
 
 						tempIntString = "0";
@@ -102,7 +110,7 @@ public class IRCamera {
 		}
 	}
 
-	public String getName() {
+	public String getCameraName() {
 		return name;
 	}
 

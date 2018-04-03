@@ -1,24 +1,16 @@
 package main;
 import guisupport.ImgWindow;
 
-import java.awt.Color;
-
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import org.opencv.core.Core;
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
-import org.opencv.core.Point;
 import org.opencv.core.Scalar;
-import org.opencv.imgproc.Imgproc;
-
-import utils.Config;
-
 
 public class Initializer {
+	private final static Scalar GREEN_COLOR = new Scalar(0, 255, 0);
+	private final static Scalar SKY_BLUE_COLOR = new Scalar(235, 206, 136);
+	private final static Scalar DEEP_BLUE_COLOR = new Scalar(255, 0, 0);
+
 	public static ImgWindow outputWindow;
 	private static Board currentBoard;
 	
@@ -27,12 +19,15 @@ public class Initializer {
 
 		Initializer initializer = new Initializer();
 		initializer.start();
+
+		currentBoard = new Board(2, GREEN_COLOR, DEEP_BLUE_COLOR, 5);
 		
-		currentBoard = new Board(2, new Scalar(0, 255, 0), new Scalar(255, 0, 0), 5);
+		//Callibration callibration = new Callibration(currentBoard.getCameras());
+		//callibration.startCallibration();
 		
 		while(true) {
 			currentBoard.updateImage();
-			outputWindow.setImage(currentBoard.getImage());
+			outputWindow.setImage(currentBoard.getResultingImage());
 		}
 	}
 

@@ -20,7 +20,7 @@ public class Initializer {
 		Initializer initializer = new Initializer();
 		initializer.start();
 
-		currentBoard = new Board(2, GREEN_COLOR, DEEP_BLUE_COLOR, 5);
+		currentBoard = new Board(2, GREEN_COLOR, DEEP_BLUE_COLOR, 3);
 		
 		//Callibration callibration = new Callibration(currentBoard.getCameras());
 		//callibration.startCallibration();

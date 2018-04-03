@@ -21,13 +21,10 @@ public class IRCamera extends Thread {
 	public IRCamera(String cameraName, String portName, int baudRate) {
 		comPort = InitializeComPort(comPort, portName, baudRate);
 		name = cameraName;
-
-		if (ClearBuffer(comPort)) {
-			System.out.println("Buffer is emptied");
-		}
 		
+		ClearBuffer(comPort);
 		first = true;
-		
+	
 		this.start();
 	}
 

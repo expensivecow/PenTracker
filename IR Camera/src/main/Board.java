@@ -131,11 +131,7 @@ public class Board {
 			if (currCoordinates.arePointsFound()) {
 				Point point = new Point(currCoordinates.getYCoordinate(0),
 						currCoordinates.getXCoordinate(0));
-
-				System.out.println(cameras.get(i).getCameraName() + " point found: "
-						+ currCoordinates.toString());// + point.x + ", " +
-														// point.y);
-
+				
 				Core.circle(cameraMats.get(i), point, thickness, currentColor, -1);
 				Core.flip(cameraMats.get(i), flipMats.get(i), 0);
 
@@ -144,7 +140,7 @@ public class Board {
 		}
 		
 		Core.hconcat(warpedMats, imageBeforeScale);
-		Imgproc.resize(imageBeforeScale, imageAfterScale, imageAfterScale.size(), 0, 0, Imgproc.INTER_CUBIC);
+		Imgproc.resize(imageBeforeScale, imageAfterScale, imageAfterScale.size(), 0, 0, Imgproc.INTER_LINEAR);
 		
 		imageAfterScale.copyTo(resultingImage.rowRange((resolutionH-scaleH)/2, (resolutionH-scaleH)/2 + scaleH).colRange((resolutionW-scaleW)/2, (resolutionW-scaleW)/2 + scaleW));
 	}

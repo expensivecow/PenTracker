@@ -1,7 +1,8 @@
-package main;
+package com.digitalglass.main.infrared;
 
 import java.util.ArrayList;
 import java.util.List;
+
 
 import org.opencv.core.Point;
 

@@ -1,4 +1,4 @@
-package main;
+package com.digitalglass.main.core;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package main;
+package com.digitalglass.main.infrared;
 
 import org.opencv.core.Point;
 

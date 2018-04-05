@@ -1,7 +1,8 @@
-package main;
+package com.digitalglass.main.core;
 
 import java.util.ArrayList;
 import java.util.List;
+
 
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -10,7 +11,10 @@ import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
-import utils.Config;
+import com.digitalglass.main.infrared.IRCamera;
+import com.digitalglass.main.infrared.IRCoordinates;
+import com.digitalglass.main.utils.Config;
+
 
 public class Board {
 	// Mats used to transform the original image to a flattened artifact

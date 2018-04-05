@@ -1,7 +1,8 @@
-package main;
+package com.digitalglass.main.infrared;
 
 import java.util.LinkedList;
 import java.util.Queue;
+
 
 import com.fazecast.jSerialComm.SerialPort;
 

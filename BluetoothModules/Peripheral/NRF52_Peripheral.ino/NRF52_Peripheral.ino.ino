@@ -1,21 +1,31 @@
 #include <bluefruit.h>
 
+// Pin Definitions
 #define DRAW_BUTTON_PORT 7
-#define OPTION_BUTTON_PORT 11
+#define RESYNC_BUTTON_PORT 16
+#define USER_FUNCTIONALITY_BUTTON_PORT 15
 
-/* HRM Service Definitions
- * Heart Rate Monitor Service:  0x180D
- * Heart Rate Measurement Char: 0x2A37
- */
+// Draw Functionality Values
+#define DRAW_START 1
+#define DRAW_END 0
+
+// Recallibration Functionality Values
+#define RS_RECALLIBRATE 1
+
+// User Functionality Values
+#define UF_CHANGE_COLOR 0
+#define UF_ERASE_TOGGLE 1
+#define UF_CLEAR_BOARD 2
+
 BLEUuid UUID16_PEN_SERVICE = BLEUuid(0xface);
-BLEUuid UUID16_DRAWING_CHARACTERISTIC = BLEUuid(0xdada);
-BLEUuid UUID16_RESYNC_CHARACTERISTIC = BLEUuid(0xdadb);
-BLEUuid UUID16_CLEAR_CHARACTERISTIC = BLEUuid(0xdadc);
- 
+BLEUuid UUID16_DRAWING_CHARACTERISTIC = BLEUuid(0xaaa0);
+BLEUuid UUID16_RESYNC_CHARACTERISTIC = BLEUuid(0xaaa1);
+BLEUuid UUID16_USER_FUNCTIONALITY_CHARACTERISTIC = BLEUuid(0xaaa2);
+
 BLEService        pds = BLEService(UUID16_PEN_SERVICE);
 BLECharacteristic pdc = BLECharacteristic(UUID16_DRAWING_CHARACTERISTIC);
-BLECharacteristic pdrs = BLECharacteristic(UUID16_RESYNC_CHARACTERISTIC);
-BLECharacteristic pdcl = BLECharacteristic(UUID16_CLEAR_CHARACTERISTIC);
+BLECharacteristic prsc = BLECharacteristic(UUID16_RESYNC_CHARACTERISTIC);
+BLECharacteristic pufc = BLECharacteristic(UUID16_USER_FUNCTIONALITY_CHARACTERISTIC);
 //BLECharacteristic poc = BLECharacteristic(UUID16_OPTION_CHARACTERISTIC);
 
 BLEDis bledis;    // DIS (Device Information Service) helper class instance
@@ -28,17 +38,24 @@ void connect_callback(uint16_t conn_handle);
 void disconnect_callback(uint16_t conn_handle, uint8_t reason);
 
 boolean prevDrawVal;
-boolean prevOptionVal;
-uint8_t drawData;
-    
+boolean prevRSVal;
+boolean prevUFVal;
+unsigned long drawTime;
+unsigned long rsTime;
+unsigned long ufTime;
+
 void setup() { 
-  drawData = 0;
+  drawTime = millis();
+  rsTime = millis();
+  ufTime = millis();
   
   pinMode(DRAW_BUTTON_PORT, INPUT);
-  pinMode(OPTION_BUTTON_PORT, INPUT);
+  pinMode(RESYNC_BUTTON_PORT, INPUT);
+  pinMode(USER_FUNCTIONALITY_BUTTON_PORT, INPUT);
 
   prevDrawVal = digitalRead(DRAW_BUTTON_PORT);
-  prevOptionVal = digitalRead(OPTION_BUTTON_PORT);
+  prevRSVal = digitalRead(RESYNC_BUTTON_PORT);
+  prevUFVal = digitalRead(USER_FUNCTIONALITY_BUTTON_PORT);
   
   Serial.begin(115200);
 
@@ -48,7 +65,7 @@ void setup() {
 
   // Set the advertised device name (keep it short!)
   Serial.println("Setting Device Name to 'Feather52 HRM'");
-  Bluefruit.setName("Bluefruit52 HRM");
+  Bluefruit.setName("Digital Glass");
 
   // Set the connect/disconnect callback handlers
   Bluefruit.setConnectCallback(connect_callback);
@@ -115,15 +132,15 @@ void setupService(void) {
   pdc.setFixedLen(1);
   pdc.begin();
   
-  pdrs.setProperties(CHR_PROPS_NOTIFY);
-  pdrs.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
-  pdrs.setFixedLen(1);
-  pdrs.begin();
+  prsc.setProperties(CHR_PROPS_NOTIFY);
+  prsc.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
+  prsc.setFixedLen(1);
+  prsc.begin();
   
-  pdcl.setProperties(CHR_PROPS_NOTIFY);
-  pdcl.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
-  pdcl.setFixedLen(1);
-  pdcl.begin();
+  pufc.setProperties(CHR_PROPS_NOTIFY);
+  pufc.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
+  pufc.setFixedLen(1);
+  pufc.begin();
 }
 
 void connect_callback(uint16_t conn_handle) {
@@ -145,29 +162,78 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason) {
 void loop() {
   if ( Bluefruit.connected() ) {
     boolean currDrawVal = digitalRead(DRAW_BUTTON_PORT);
+    boolean currRSVal = digitalRead(RESYNC_BUTTON_PORT);
+    boolean currUFVal = digitalRead(USER_FUNCTIONALITY_BUTTON_PORT);
 
-    // On Press
+    // DRAW BUTTON (FRONT BUTTON)
     if (prevDrawVal == false && currDrawVal == true) {
-       drawData = currDrawVal;
-       pdc.notify8(drawData);
-       Serial.println("Button has been pressed");
+       // Button pressed
+       pdc.notify8(DRAW_START);
+       delay(50);
+       Serial.println("Drawing Started");
     }
     else if (prevDrawVal == true && currDrawVal == false) {
-       drawData = currDrawVal;
-       pdc.notify8(drawData);
-      Serial.println("Button has been released");
+       Serial.println("Stop Drawing");
+       pdc.notify8(DRAW_END);
     }
     else if (prevDrawVal == true && currDrawVal == true) {
       // Button is being held down
     }
     prevDrawVal = currDrawVal;
-    
+
+    // CHANGE COLOR/RESYNC BUTTON
+    if (prevRSVal == false && currRSVal == true) {
+       rsTime = millis();
+       delay(50);
+       // Button Pressed
+    }
+    else if (prevRSVal == true && currRSVal == false) {
+       unsigned long currentTime = millis();
+       unsigned long elapsedTime = currentTime - rsTime;
+       
+       if (elapsedTime >= 2000) {
+          // Request recallibration
+          pufc.notify8(RS_RECALLIBRATE);
+          Serial.println("Recallibration Requested");
+       } else {
+          prsc.notify8(UF_CHANGE_COLOR);
+          Serial.println("Color Change Requested");
+       }
+    }
+    else if (prevRSVal == true && currRSVal == true) {
+      // Button is being held down
+    }
+    prevRSVal = currRSVal;
+
+    // CHANGE COLOR/RESYNC BUTTON
+    if (prevUFVal == false && currUFVal == true) {
+       ufTime = millis();
+       delay(50);
+       // Button Pressed
+    }
+    else if (prevUFVal == true && currUFVal == false) {
+       unsigned long currentTime = millis();
+       unsigned long elapsedTime = currentTime - ufTime;
+       
+       if (elapsedTime >= 2000) {
+          // Request recallibration
+          pufc.notify8(UF_CLEAR_BOARD);
+          Serial.println("Clear Board Requested");
+       } else {
+          pufc.notify8(UF_ERASE_TOGGLE);
+          Serial.println("Erase Toggle Requested");
+       }
+    }
+    else if (prevUFVal == true && currUFVal == true) {
+      // Button is being held down
+    }
+    prevUFVal = currUFVal;
   }
-  
 }
 
 void rtos_idle_callback(void) {
   // Don't call any other FreeRTOS blocking API()
   // Perform background task(s) here
 }
+
 

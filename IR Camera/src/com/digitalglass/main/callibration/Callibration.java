@@ -1,10 +1,10 @@
-package main;
+package com.digitalglass.main.callibration;
 
-import guisupport.ImgWindow;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
+
 
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -12,13 +12,19 @@ import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 
-import utils.Config;
+import com.digitalglass.main.gui.ImgWindow;
+import com.digitalglass.main.infrared.IRCamera;
+import com.digitalglass.main.infrared.IRCoordinates;
+import com.digitalglass.main.infrared.IRPoint;
+import com.digitalglass.main.utils.Config;
+
 
 public class Callibration {
 	private static final int NUM_CAMERA_POINTS_REQUIRED = 4;
 	List<IRCamera> callibrationCameras;
 	Mat cameraMat;
 	Mat flipMat;
+	Mat tempColorMat;
 	ImgWindow callibrationWindow;
 	
 	public Callibration(List<IRCamera> cameras) {
@@ -27,8 +33,11 @@ public class Callibration {
         // TODO, create configuration check	
         int height = Integer.parseInt(Config.getInstance().getProperty("CameraFrameHeight"));
         int width = Integer.parseInt(Config.getInstance().getProperty("CameraFrameWidth"));
-        
+
 	    cameraMat = new Mat(height, width, CvType.CV_8UC3);
+	    tempColorMat = new Mat(height, width, CvType.CV_8UC3);
+	    
+	    tempColorMat.setTo(new Scalar(0, 255, 0));
 	    flipMat = new Mat(height, width, CvType.CV_8UC3);
 	}
 	
@@ -50,12 +59,14 @@ public class Callibration {
 			System.out.println(coordinates.toString());
 			
 			for (int i = 0; i < coordinates.getNumPointsFound(); i++) {
+				tempColorMat.copyTo(cameraMat);
 				Point point = new Point(coordinates.getYCoordinate(i), coordinates.getXCoordinate(i));
-		        Core.circle(cameraMat, point, 3, new Scalar(0, 0, 255), -1);
+		        Core.circle(cameraMat, point, 7, new Scalar(0, 0, 255), -1);
 			}
 			
 			Core.flip(cameraMat, flipMat, 0);
 			callibrationWindow.setImage(flipMat);
+			
 			
 			coordinates = camera.getCurrentCoordinates();
 		}		

@@ -16,6 +16,7 @@ public class UserFunctionalityNotification implements BluetoothNotification<byte
 	}
 	
     public void run(byte[] tempRaw) {
+    	System.out.println("Hello");
     	if (tempRaw[0] == COLOR_TOGGLE) {
     		stateMachine.toggleColor();
     	}

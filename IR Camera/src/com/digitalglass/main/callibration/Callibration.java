@@ -59,7 +59,6 @@ public class Callibration {
 			System.out.println(coordinates.toString());
 			
 			for (int i = 0; i < coordinates.getNumPointsFound(); i++) {
-				tempColorMat.copyTo(cameraMat);
 				Point point = new Point(coordinates.getYCoordinate(i), coordinates.getXCoordinate(i));
 		        Core.circle(cameraMat, point, 7, new Scalar(0, 0, 255), -1);
 			}

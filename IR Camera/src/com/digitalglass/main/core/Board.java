@@ -132,7 +132,6 @@ public class Board {
 		tempLineList = new ArrayList<List<Point>>();
 		
 		prevPoints = new ArrayList<Point>();
-		currPoints = new ArrayList<Point>();
 		for (int i = 0; i < numCameras; i++) {
 			prevPoints.add(null);
 			tempLineList.add(new ArrayList<Point>());
@@ -143,9 +142,9 @@ public class Board {
 		for (int i = 0; i < numCameras; i++) {
 			IRCoordinates currCoordinates = cameras.get(i).getCurrentCoordinates();
 
-			List<Point> currPointList = tempLineList.get(i);
 			
 			if (currCoordinates.arePointsFound() && drawFlag == true) {
+				//System.out.println(cameras.get(i).getCameraName() + ": " + currCoordinates.toString());
 				Point currPoint = new Point(currCoordinates.getYCoordinate(0),
 						currCoordinates.getXCoordinate(0));
 				
@@ -158,15 +157,13 @@ public class Board {
 					Core.line(cameraMats.get(i), prevPoint, currPoint, currentColor, thickness);
 				}
 				
-				currPointList.add(currPoint);
-				
 				Core.flip(cameraMats.get(i), flipMats.get(i), 0);
 
 				warpedMats.set(i, frames.get(i).getProjection());
+				prevPoints.set(i, currPoint);
 			}
 			else {
 				prevPoints.set(i, null);
-				currPointList.clear();
 			}
 		}
 		
@@ -215,5 +212,9 @@ public class Board {
 	
 	public void updateDrawFlag(boolean flag) {
 		drawFlag = flag;
+	}
+	
+	public void updateThickness(int t) {
+		this.thickness = t;
 	}
 }

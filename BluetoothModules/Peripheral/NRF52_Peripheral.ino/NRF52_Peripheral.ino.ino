@@ -169,7 +169,6 @@ void loop() {
     if (prevDrawVal == false && currDrawVal == true) {
        // Button pressed
        pdc.notify8(DRAW_START);
-       delay(50);
        Serial.println("Drawing Started");
     }
     else if (prevDrawVal == true && currDrawVal == false) {
@@ -184,7 +183,6 @@ void loop() {
     // CHANGE COLOR/RESYNC BUTTON
     if (prevRSVal == false && currRSVal == true) {
        rsTime = millis();
-       delay(50);
        // Button Pressed
     }
     else if (prevRSVal == true && currRSVal == false) {
@@ -193,10 +191,10 @@ void loop() {
        
        if (elapsedTime >= 2000) {
           // Request recallibration
-          pufc.notify8(RS_RECALLIBRATE);
+          prsc.notify8(RS_RECALLIBRATE);
           Serial.println("Recallibration Requested");
        } else {
-          prsc.notify8(UF_CHANGE_COLOR);
+          pufc.notify8(UF_CHANGE_COLOR);
           Serial.println("Color Change Requested");
        }
     }
@@ -208,7 +206,6 @@ void loop() {
     // CHANGE COLOR/RESYNC BUTTON
     if (prevUFVal == false && currUFVal == true) {
        ufTime = millis();
-       delay(50);
        // Button Pressed
     }
     else if (prevUFVal == true && currUFVal == false) {

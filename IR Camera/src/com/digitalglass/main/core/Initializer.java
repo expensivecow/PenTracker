@@ -9,6 +9,7 @@ import org.opencv.core.Core;
 import org.opencv.core.Scalar;
 
 import com.digitalglass.main.bluetooth.BLEHelper;
+import com.digitalglass.main.callibration.Callibration;
 import com.digitalglass.main.gui.ImgWindow;
 
 public class Initializer {
@@ -21,6 +22,10 @@ public class Initializer {
 	private final static Scalar PASTEL_NAVY_BLUE_COLOR = new Scalar(170,180,255);
 	private final static Scalar PASTEL_BRIGHT_PINK_COLOR = new Scalar(209,254,255);
 	private final static Scalar PASTEL_DARK_PINK_COLOR = new Scalar(255,178,236);
+	private final static int ERASER_THICKNESS = 10;
+	private final static int DRAW_THICKNESS = 7;
+	
+	private boolean isErasing = false;
 	
 	private List<Scalar> colorPalette;
 	
@@ -45,28 +50,24 @@ public class Initializer {
 
 		Initializer initializer = new Initializer();
 		initializer.start();
-		
-        BLEHelper ble = new BLEHelper(initializer);
-        
-        while(ble.isConnected()) {
-        	
-        }
-        
-        System.out.println("DONE!");
-        /*
-		Initializer initializer = new Initializer();
-		initializer.start();
 
-		currentBoard = new Board(2, GREEN_COLOR, DEEP_BLUE_COLOR, 3);
+        BLEHelper ble = new BLEHelper(initializer);
+
+		currentBoard = new Board(2, GREEN_COLOR, PASTEL_LIGHT_GREEN_COLOR, 7);
 		
-		Callibration callibration = new Callibration(currentBoard.getCameras());
-		callibration.startCallibration();
-		
+		//Callibration callibration = new Callibration(currentBoard.getCameras());
+		//callibration.startCallibration();
+
 		while(true) {
-			currentBoard.updateImage();
-			outputWindow.setImage(currentBoard.getResultingImage());
+			if (ble.isConnected()) {
+				currentBoard.updateImage();
+				outputWindow.setImage(currentBoard.getResultingImage());
+			}
+			else {
+				System.out.println("Trying to reconnect");
+				ble.tryConnect();
+			}
 		}
-		*/
 	}
 
 	private void start() {
@@ -88,11 +89,28 @@ public class Initializer {
 	}
 	
 	public void toggleErase() {
-		currentBoard.updateCurrentColor(GREEN_COLOR);
+		isErasing = (isErasing == true) ? false : true;
+		
+		if (isErasing == true) {
+			currentBoard.updateThickness(ERASER_THICKNESS);
+			currentBoard.updateCurrentColor(GREEN_COLOR);
+		}
+		else {
+			currentBoard.updateThickness(DRAW_THICKNESS);
+			currentBoard.updateCurrentColor(colorPalette.get(currentIndex));
+		}
 		System.out.println("TOGGLE ERASE");
 	}
 	
 	public void toggleColor() {
+		if(currentIndex == colorPalette.size()-1) {
+			currentIndex = 0;
+		}
+		else {
+			currentIndex += 1;	
+		}
+		Scalar colorToChange = colorPalette.get(currentIndex);
+		currentBoard.updateCurrentColor(colorToChange);
 		System.out.println("TOGGLE COLOR");
 	}
 	

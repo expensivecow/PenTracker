@@ -32,8 +32,6 @@ public class Board {
 	private Mat resultingImage;
 	
 	private List<Frame> frames;
-	private List<IRCoordinates> coordinates;
-	
 	// Drawing Characteristics
 	private Scalar currentColor;
 	private int thickness;
@@ -45,7 +43,12 @@ public class Board {
 	private int resolutionW;
 	private int resolutionH;
 	
-
+	private boolean drawFlag = false;
+	private List<Point> prevPoints;
+	
+	// Temporary line list until line is established
+	private List<List<Point>> tempLineList;
+	
 	private List<IRCamera> cameras;
 	private int numCameras;
 
@@ -85,8 +88,7 @@ public class Board {
 			warpedMats.add(new Mat(height, width, CvType.CV_8UC3));
 		}
 
-		// Initialize List of coordinates used to detect points for each camera
-		coordinates = new ArrayList<IRCoordinates>();
+		new ArrayList<IRCoordinates>();
 
 		// Initialize cameras
 		for (int i = 0; i < numCameras; i++) {
@@ -126,20 +128,45 @@ public class Board {
 			flipMats.get(i).setTo(keyColor);
 			warpedMats.get(i).setTo(keyColor);
 		}
+		
+		tempLineList = new ArrayList<List<Point>>();
+		
+		prevPoints = new ArrayList<Point>();
+		currPoints = new ArrayList<Point>();
+		for (int i = 0; i < numCameras; i++) {
+			prevPoints.add(null);
+			tempLineList.add(new ArrayList<Point>());
+		}
 	}
 
 	public void updateImage() {
 		for (int i = 0; i < numCameras; i++) {
 			IRCoordinates currCoordinates = cameras.get(i).getCurrentCoordinates();
 
-			if (currCoordinates.arePointsFound()) {
-				Point point = new Point(currCoordinates.getYCoordinate(0),
+			List<Point> currPointList = tempLineList.get(i);
+			
+			if (currCoordinates.arePointsFound() && drawFlag == true) {
+				Point currPoint = new Point(currCoordinates.getYCoordinate(0),
 						currCoordinates.getXCoordinate(0));
 				
-				Core.circle(cameraMats.get(i), point, thickness, currentColor, -1);
+				Point prevPoint = prevPoints.get(i);
+				
+				if (prevPoint == null) {
+					Core.circle(cameraMats.get(i), currPoint, thickness, currentColor, -1);
+				}
+				else {
+					Core.line(cameraMats.get(i), prevPoint, currPoint, currentColor, thickness);
+				}
+				
+				currPointList.add(currPoint);
+				
 				Core.flip(cameraMats.get(i), flipMats.get(i), 0);
 
 				warpedMats.set(i, frames.get(i).getProjection());
+			}
+			else {
+				prevPoints.set(i, null);
+				currPointList.clear();
 			}
 		}
 		
@@ -147,6 +174,19 @@ public class Board {
 		Imgproc.resize(imageBeforeScale, imageAfterScale, imageAfterScale.size(), 0, 0, Imgproc.INTER_LINEAR);
 		
 		imageAfterScale.copyTo(resultingImage.rowRange((resolutionH-scaleH)/2, (resolutionH-scaleH)/2 + scaleH).colRange((resolutionW-scaleW)/2, (resolutionW-scaleW)/2 + scaleW));
+	}
+	
+	public void fillFrames(Scalar keyColor) {
+		for (int i = 0; i < numCameras; i++) {
+			cameraMats.get(i).setTo(keyColor);
+			flipMats.get(i).setTo(keyColor);
+			warpedMats.get(i).setTo(keyColor);
+		}
+		
+		// Set all mats to the default color
+		imageBeforeScale.setTo(keyColor);
+		imageAfterScale.setTo(keyColor);
+		resultingImage.setTo(keyColor);
 	}
 
 	public Mat getImageBeforeScale() {
@@ -167,5 +207,13 @@ public class Board {
 
 	public List<List<Point>> getCallibrations() {
 		return callibPerCamera;
+	}
+	
+	public void updateCurrentColor(Scalar color) {
+		currentColor = color;
+	}
+	
+	public void updateDrawFlag(boolean flag) {
+		drawFlag = flag;
 	}
 }
